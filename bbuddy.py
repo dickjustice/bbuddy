@@ -14,7 +14,7 @@ MS_TOTAL_MAX = 500
 
 XDOTOOL = 'xdotool'
 fn_settings = os.environ['HOME']+'/.bbuddy.conf'
-default_lines = ( "ls -l", "ps", "ps -e", 'pwd' )
+default_lines = [ "ls -l", "ps", "ps -e", 'pwd' ]
 
 blues  = { 'normal':'#6994f0', 'hover':'#93b2f5'}
 greens = { 'normal':'#65c974', 'hover':'#7de88d'}
@@ -226,7 +226,7 @@ def install_main_grid( master ):
       c=0;
       btn = Button( master, text='DO', pady=3, font=do_font, command=lambda j=r: button_cb(j,'do')  )
       btn.grid(row=r,column=c, padx=0 )
-      enable_state = True if len( init_lines[r] ) >0 else False
+      enable_state = True if len( init_lines ) >0 else False
       set_button_enabled_state( btn, enable_state, greens )
       row_info['dobtn']=btn
       c+=1
@@ -318,11 +318,11 @@ def main(argv):
       with open( fn_settings, 'r' ) as f:
          contents =f.read()
       init_lines = contents.splitlines()
-      for i in range( len(init_lines), NUM_CMDS):
-         init_lines.append('')
    else:
       print( "No setings found. Using defautlts"  )
       init_lines = default_lines
+   for i in range( len(init_lines), NUM_CMDS):
+      init_lines.append('')
 
    # fork and return parent process
    if os.fork()>0:

@@ -7,58 +7,57 @@
 
 import sys,os,subprocess
 
-FFFIND_VER = '0.0.001'
+FFFIND_VER = '0.0.002-pre'
 
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
 BOLD_YELLOW  = "\033[1;33m"
 BOLD_RED=  "\033[1;31m"
 
-def run( cmd ):
-   checkprocess  = subprocess.run(  cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE  )  
-   rr = checkprocess.returncode 
-   oo = checkprocess.stdout.decode( "utf-8" )
-   ee = checkprocess.stderr.decode( "utf-8" )
-   return(rr,oo,ee)
-
-def colorize_it( file, what  ):
-   parts = file.split( what )
-   jval = BOLD_RED + what + RESET
-   rval = jval.join( parts )
-   return( rval )
-
+# returns (match,colorized_file)
+#  match is a boolean, corresponding to whether it matches
+#  colorized_file is the file name with colorization added
 def does_it_match( file, what ):
-   if what.startswith( '*' ) and what.endswith( '*' ):
+   colorized_file=''
+
+   if what=='*':
+      matches=True
+      colorized_file = file   #for '*' don't colorize at all
+
+   elif what.startswith( '*' ) and what.endswith( '*' ):
       mval = what[1:-1]
       matches = mval in file 
+      if matches:
+         parts = file.split( mval )
+         jval = BOLD_RED + mval + RESET
+         colorized_file = jval.join( parts )
 
    elif what.startswith( '*' ):        # Example:  *.py 
       mval = what[1:]
       matches = file.endswith( mval ) 
+      if matches:
+         colorized_file = file[:len(file)-len(mval)] + BOLD_RED + mval + RESET
 
    elif what.endswith( '*' ):          # example: sammy*
       mval = what[:-1]
       matches = file.startswith( mval ) 
+      if matches:
+         colorized_file = BOLD_RED + mval + RESET + file[len(mval):]
    else:
       # exact match required
       mval = what
       matches = file==mval
-   return( matches, mval )
+      if matches:
+         colorized_file = file
+   return( matches,  colorized_file )
 
 
 def does_it_match_and_please_colorize( file, root, what, colorize=True ):
-   matchs=False
-   czd_file = 'xxx'
-
-   matches, mval = does_it_match( file, what )
-
+   matches, colorized_file = does_it_match( file, what )
    fn_w_path =  root + '/' + file 
-
-   if colorize:
-      fn_w_path = colorize_it( fn_w_path, mval  );
-
+   if matches and colorize:
+      fn_w_path =  root + '/' + colorized_file 
    return matches, fn_w_path 
-
 
 def directory_is_excluded( root, d, exclude_dirs ):
    for exx in exclude_dirs:
@@ -137,12 +136,11 @@ def main( argv ):
             matches, fn_czd = does_it_match_and_please_colorize( file, root, what, colorize=colorize )
             if matches:
                print( fn_czd )
-
       if report_dirs:
          for dirr in dirs:
             matches, dir_czd = does_it_match_and_please_colorize( dirr, root, what, colorize=colorize )
             if matches:
-               print( dir_czd )
+               print( dir_czd + '/' )
 
 #---------
 if __name__ == "__main__":

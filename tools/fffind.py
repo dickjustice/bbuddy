@@ -83,6 +83,7 @@ def usage_bail():
    print( "     abc*  : starts with abc" ) 
    print( "     *abc  : ends with abc" ) 
    print( "     *abc* : contains abc" ) 
+   print( "     *     : all files and directories match" ) 
    print( "  options:" ) 
    print( "     -f     : files only" )
    print( "     -d     : directories only")

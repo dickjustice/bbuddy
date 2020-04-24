@@ -2,7 +2,7 @@
 #
 #   rreplace.py
 #
-#  (c) Dick Justice
+#  (c) 2020 Dick Justice
 #  Released under MIT license.
 
 import sys,os,time,subprocess

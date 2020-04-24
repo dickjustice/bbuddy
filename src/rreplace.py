@@ -3,7 +3,7 @@
 #   rreplace.py
 #
 #  (c) Dick Justice
-#  Released under MIT license.  See LICENSE.txt
+#  Released under MIT license.
 
 import sys,os,time,subprocess
 from datetime import datetime

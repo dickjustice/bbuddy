@@ -3,7 +3,7 @@
 #   bbuddy.py
 #
 #  (c) Dick Justice
-#  Released under MIT license.  See LICENSE.txt
+#  Released under MIT license.
 #
 import os,sys,subprocess,threading,time,copy
 from tkinter import Tk, Label, Button, Frame, Entry, StringVar, font, END

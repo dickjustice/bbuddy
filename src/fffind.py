@@ -3,11 +3,11 @@
 #   fffind.py
 #
 #  (c) Dick Justice
-#  Released under MIT license.  See LICENSE.txt
+#  Released under MIT license.
 
 import sys,os,subprocess
 
-FFFIND_VER = '0.0.002-pre'
+FFFIND_VER = '0.0.002-pre2'
 
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
@@ -69,21 +69,15 @@ def directory_is_excluded( root, d, exclude_dirs ):
             return True
    return False
 
-def colorcode_it( file, what ) :
-   file_new = file
-   return( file_new )
-
-
-
 def usage_bail():
    print( "fffind v %s" % FFFIND_VER )
    print( "Usage: fffind [-f|-d] [-bw] [-x dir] <what>")
    print( "  <what> may be like:" ) 
-   print( "     abc   : is abc" ) 
-   print( "     abc*  : starts with abc" ) 
-   print( "     *abc  : ends with abc" ) 
-   print( "     *abc* : contains abc" ) 
-   print( "     *     : all files and directories match" ) 
+   print( "     abc     : is exactly abc" ) 
+   print( "     'abc*'  : starts with abc" ) 
+   print( "     '*abc'  : ends with abc" ) 
+   print( "     '*abc*' : contains abc" ) 
+   print( "     '*'     : all files and directories match" ) 
    print( "  options:" ) 
    print( "     -f     : files only" )
    print( "     -d     : directories only")

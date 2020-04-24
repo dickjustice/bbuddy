@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+#
+#  ppgrep.py
+#
+#  (c) Dick Justice
+#  Released under MIT license.
+
 import sys,os,time,subprocess
 from datetime import datetime
 from pathlib import Path

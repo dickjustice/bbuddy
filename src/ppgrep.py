@@ -46,12 +46,23 @@ def does_it_match( file, what ):
    return( matches )
 
 
+def directory_is_excluded( root, d, exclude_dirs ):
+   for exx in exclude_dirs:
+      if '/' in exx:
+         if os.path.abspath(root+'/'+d) == os.path.abspath(exx):
+            return True
+      else:
+         if d==exx:
+            return True
+   return False
+
 
 def usage_bail():
    print( "ppgrep v %s"% PPGREP_VER )
    print( "Usage: ppgrep <what> [fn_match] [fn_match_2] .." )
    print( "   Recursively searches for string <what> in files under local dir" )
    print( "   If 'fn_match' not spcified, searches all files (uses '*') ")
+   print( "If file '.exclude' is present at any level, it excludes its listed directories")
    exit()
 
 def main( argv ):
@@ -59,22 +70,39 @@ def main( argv ):
       usage_bail()
 
    what = argv[1]
-   wherelist=[]
+   fn_match_list=[]
 
-   where_args = argv[2:]
-   if len(where_args)>0:
-      for arg in where_args:
-         wherelist.append( arg )
+   fn_match_args = argv[2:]
+   if len(fn_match_args)>0:
+      for arg in fn_match_args:
+         fn_match_list.append( arg )
    else:
-      wherelist.append( '*' )
+      fn_match_list.append( '*' )
 
-
+   exclude_dirs=[]
    searchfiles=[]
    for root, dirs, files in os.walk('.'):
+      if '.exclude' in files:
+         with open(root+'/.exclude') as f:
+            lines = f.readlines()
+         for line in lines:
+            strippedline = line.strip()
+            if len(strippedline)>0 and not strippedline.startswith( '#' ):
+               exclude_dirs.append( root+'/'+strippedline  )
+
+      newdirs=[]
+      for d in dirs:
+         if directory_is_excluded( root, d, exclude_dirs):
+            pass
+         else:
+            newdirs.append(d)
+      dirs[:] = newdirs
+
+
       root_good = Path(root).as_posix()   #deal with windows paths
 
       for file in files:
-         for where in wherelist:
+         for where in fn_match_list:
             if does_it_match( file, where ):
                searchfiles.append( (root +'/'+ file) )
 
@@ -95,7 +123,8 @@ def main( argv ):
                #most of the time, no desire to print here. zip, other binaries, etc cause issues
                #print( "problem decoding in '%s'" % fn )
                pass
-
+   if len(exclude_dirs)>0:
+      print( "Note: excluded these dirs from search:", exclude_dirs )
 if __name__ == '__main__':
    main( sys.argv )
 

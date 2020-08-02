@@ -85,6 +85,7 @@ def usage_bail():
    print( "     -x dir : exclude this directory. may be used multpiple times")
    print( "              if dir contains '/', only the one instance is excluded" )
    print( "              otherwise, any dir with that name found is excluded" )
+   print( "If file '.exclude' is present at any level, it excludes its listed directories")
    exit()
 
 def main( argv ):
@@ -116,8 +117,24 @@ def main( argv ):
             print( "invalid option '%s'" % opt )
             usage_bail()
 
+
    #print( "----------")
+
+   #print( os.listdir('.'))
+   #if '.exclude' in os.listdir('.'):
+   #   print( "found .exclude 1")
+
+   #print( "----------")
+   #for root, dirs, files in os.walk('.', topdown=True):
    for root, dirs, files in os.walk('.'):
+      if '.exclude' in files:
+         with open(root+'/.exclude') as f:
+            lines = f.readlines()
+         for line in lines:
+            strippedline = line.strip()
+            if len(strippedline)>0 and not strippedline.startswith( '#' ):
+               exclude_dirs.append( root+'/'+strippedline  )
+
       newdirs=[]
       for d in dirs:
          if directory_is_excluded( root, d, exclude_dirs):
@@ -125,6 +142,9 @@ def main( argv ):
          else:
             newdirs.append(d)
       dirs[:] = newdirs
+
+
+
 
       if report_files:
          for file in files:
@@ -136,6 +156,9 @@ def main( argv ):
             matches, dir_czd = does_it_match_and_please_colorize( dirr, root, what, colorize=colorize )
             if matches:
                print( dir_czd + '/' )
+
+   if len(exclude_dirs)>0:
+      print( "Note: These dirs excluded from search:", exclude_dirs )
 
 #---------
 if __name__ == "__main__":

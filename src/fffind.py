@@ -7,7 +7,7 @@
 
 import sys,os,subprocess
 
-FFFIND_VER = '0.0.002-pre2'
+FFFIND_VER = '0.0.002-pre3'
 
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
@@ -117,15 +117,6 @@ def main( argv ):
             print( "invalid option '%s'" % opt )
             usage_bail()
 
-
-   #print( "----------")
-
-   #print( os.listdir('.'))
-   #if '.exclude' in os.listdir('.'):
-   #   print( "found .exclude 1")
-
-   #print( "----------")
-   #for root, dirs, files in os.walk('.', topdown=True):
    for root, dirs, files in os.walk('.'):
       if '.exclude' in files:
          with open(root+'/.exclude') as f:
@@ -137,14 +128,9 @@ def main( argv ):
 
       newdirs=[]
       for d in dirs:
-         if directory_is_excluded( root, d, exclude_dirs):
-            pass
-         else:
+         if not directory_is_excluded( root, d, exclude_dirs):
             newdirs.append(d)
       dirs[:] = newdirs
-
-
-
 
       if report_files:
          for file in files:

@@ -9,7 +9,7 @@ import sys,os,time,subprocess
 from datetime import datetime
 from pathlib import Path
 
-PPGREP_VER='0.0.001'
+PPGREP_VER='0.0.003'
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m";MAGENTA="\033[1;35m"
 BOLD_YELLOW  = "\033[1;33m"
@@ -92,12 +92,9 @@ def main( argv ):
 
       newdirs=[]
       for d in dirs:
-         if directory_is_excluded( root, d, exclude_dirs):
-            pass
-         else:
+         if not directory_is_excluded( root, d, exclude_dirs):
             newdirs.append(d)
       dirs[:] = newdirs
-
 
       root_good = Path(root).as_posix()   #deal with windows paths
 
@@ -106,7 +103,6 @@ def main( argv ):
             if does_it_match( file, where ):
                searchfiles.append( (root +'/'+ file) )
 
-   #print( "matching files:", searchfiles)
 
    for fn in searchfiles:
       if os.path.exists(fn):

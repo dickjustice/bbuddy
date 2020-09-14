@@ -9,14 +9,12 @@ import sys,os,time,subprocess
 from datetime import datetime
 from pathlib import Path
 
-PPGREP_VER='0.0.003'
+PPGREP_VER='0.0.004'
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m";MAGENTA="\033[1;35m"
 BOLD_YELLOW  = "\033[1;33m"
 BOLD_RED=  "\033[1;31m"
 
-#
-#
 #
 def colorize_it( file, what  ):
    parts = file.split( what )
@@ -101,7 +99,7 @@ def main( argv ):
       for file in files:
          for where in fn_match_list:
             if does_it_match( file, where ):
-               searchfiles.append( (root +'/'+ file) )
+               searchfiles.append( (Path(root).as_posix() +'/'+ file) )
 
 
    for fn in searchfiles:

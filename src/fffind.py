@@ -6,8 +6,9 @@
 #  Released under MIT license.
 
 import sys,os,subprocess
+from pathlib import Path
 
-FFFIND_VER = '0.0.002-pre3'
+FFFIND_VER = '0.0.002'
 
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
@@ -124,14 +125,16 @@ def main( argv ):
          for line in lines:
             strippedline = line.strip()
             if len(strippedline)>0 and not strippedline.startswith( '#' ):
-               exclude_dirs.append( root+'/'+strippedline  )
+               exclude_dirs.append( root +'/'+strippedline  )
 
       newdirs=[]
       for d in dirs:
          if not directory_is_excluded( root, d, exclude_dirs):
+            #newdirs.append(Path(d).as_posix()) 
             newdirs.append(d)
       dirs[:] = newdirs
 
+      root = Path(root).as_posix()
       if report_files:
          for file in files:
             matches, fn_czd = does_it_match_and_please_colorize( file, root, what, colorize=colorize )

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import sys,os,subprocess,string
 from pathlib import Path
-from pathlib import PurePosixPath
 
 
-Install_List = ( 'fffind', 'ppgrep', 'rreplace', 'bbuddy' )
+Install_List = ( 'fffind', 'ppgrep', 'dbdump', 'rreplace', 'bbuddy' )
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
 
@@ -41,14 +40,12 @@ def choose_best_dir():
       pass
 
    if system_is_linux:
-      print( "splitting for linux")
       path_parts = path.split( ':')
    else:
-      print( "splitting for windoze")
       path_parts = path.split( ';')
 
    # or windows, convert the backslash to forward slash and replace "C:/" with "/c/" 
-   path_parts = [  convert_path_to_posix(pp) for pp in path_parts ]
+   path_parts = [ convert_path_to_posix(pp) for pp in path_parts ]
 
    if system_is_linux:
       if yes_root:

@@ -8,7 +8,7 @@
 import sys,os,subprocess
 from pathlib import Path
 
-FFFIND_VER = '0.0.002'
+FFFIND_VER = '0.0.003'
 
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
@@ -147,7 +147,8 @@ def main( argv ):
                print( dir_czd + '/' )
 
    if len(exclude_dirs)>0:
-      print( "Note: These dirs excluded from search:", exclude_dirs )
+      xdirs = [  Path(x).as_posix()+'/' for x in exclude_dirs ]   
+      print( "Note: These dirs excluded from search:",', '.join(xdirs) )
 
 #---------
 if __name__ == "__main__":

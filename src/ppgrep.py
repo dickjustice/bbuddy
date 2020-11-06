@@ -9,7 +9,7 @@ import sys,os,time,subprocess
 from datetime import datetime
 from pathlib import Path
 
-PPGREP_VER='0.0.004'
+PPGREP_VER='0.0.005'
 
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m";MAGENTA="\033[1;35m"
 BOLD_YELLOW  = "\033[1;33m"
@@ -118,7 +118,8 @@ def main( argv ):
                #print( "problem decoding in '%s'" % fn )
                pass
    if len(exclude_dirs)>0:
-      print( "Note: excluded these dirs from search:", exclude_dirs )
+      xdirs = [  Path(x).as_posix()+'/' for x in exclude_dirs ]   
+      print( "Note: These dirs excluded from search:",', '.join(xdirs) )
 if __name__ == '__main__':
    main( sys.argv )
 

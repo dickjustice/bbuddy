@@ -3,20 +3,14 @@ import sys,os,subprocess,string
 from pathlib import Path
 
 
-Install_List = ( 'fffind', 'ppgrep', 'dbdump', 'rreplace', 'bbuddy' )
-
 RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m"
 
-
-
-
 def run( cmd ):
-   checkprocess  = subprocess.run(  cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE  )  
-   rr      = checkprocess.returncode 
-   oo = checkprocess.stdout.decode( "utf-8" )
-   ee = checkprocess.stderr.decode( "utf-8" )
+   p  = subprocess.run(  cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE ) 
+   rr = p.returncode 
+   oo = p.stdout.decode( "utf-8" )
+   ee = p.stderr.decode( "utf-8" )
    return(rr,oo,ee)
-
 
 def convert_path_to_posix( the_path ):
    # replace backslashes with forward slashes
@@ -27,7 +21,6 @@ def convert_path_to_posix( the_path ):
       if pp.startswith(   drive_letter + ":/" ):
          rval =  '/' + drive_letter.lower() + pp[2:] 
    return rval
-
 
 def choose_best_dir():
    system_is_linux=False
@@ -110,15 +103,22 @@ def main( argv ):
          print( "Warning: directory '%s' is not in the PATH" % dest_dir )
 
    print( "installing to '%s/' ..." % dest_dir )
-   for program in Install_List:
-      cmd = "cp src/%s.py %s/%s"  % (program, dest_dir, program)
+   dir_src = 'src'
+   src_files = os.listdir( dir_src )
+   print( "files:", src_files )
+
+
+   for fn_src in src_files:
+      fn_dest = fn_src[:-3] if fn_src.endswith( '.py' ) else fn_src
+
+
+      cmd = "cp %s/%s %s/%s"  % (dir_src, fn_src, dest_dir, fn_dest)
       rr,oo,ee = run( cmd )
       print( "executing: '%s'" % cmd )
       if rr!=0 or len(ee)>0:
          print( "Failed msg:", ee )
          print( "Install aborted.")
    print( "Install done.")       
-
 
 #---------
 if __name__ == "__main__":

@@ -3,10 +3,13 @@
 #   bbuddy.py
 #
 #  (c) Dick Justice
-#  Released under MIT license.
+#  Released under MIT license.  See LICENSE.txt
 #
 import os,sys,subprocess,threading,time,copy
-from tkinter import Tk, Label, Button, Frame, Entry, StringVar, font, END
+from tkinter import Tk, Label, Button, Frame, Entry, StringVar, font, INSERT, END, Text, DISABLED, FLAT, SE
+
+VER='v0.0.01'
+
 
 NUM_CMDS = 10
 MS_PER_KEYSTROKE_MAX = 100
@@ -25,13 +28,20 @@ black = '#000000'
 pink = '#facfec'  #pale pink
 lavender='#f6b2f7'
 
+dark_blues = { 'normal': '#341ea6', 'hover': '#472cd1', 'fg':'#fff' }
+dark_blues = { 'normal': '#7b65eb', 'hover': '#dcdae6', 'fg':'#fff' }
+
+dark_blues = { 'normal': '#7b65eb', 'hover': '#c6c4cf', 'fg':'#fff',  'activeforeground': '#fff' }
+#c6c4cf
+
+
 #---------------------
 #  global data
 window_id = 0;
 fully_installed=False
 presently_locked=False
 BottomButtons = {}
-all_rows=[]
+AllRows=[]
 
 def run( cmd ):
    checkprocess  = subprocess.run(  cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE  )  
@@ -41,11 +51,10 @@ def run( cmd ):
    return( rr, oo, ee )
 
 def any_lines_have_changed():
-   havechanged=False
    for i in range(NUM_CMDS):
-      if init_lines[i] != all_rows[i]['entrywidget'].get():
-         havechanged=True
-   return havechanged      
+      if init_lines[i] != AllRows[i]['entrywidget'].get():
+         return True
+   return False
 
 def set_button_enabled_state( btn, val, colors ):
    btn['foreground'] = '#000000'
@@ -53,6 +62,13 @@ def set_button_enabled_state( btn, val, colors ):
       btn['state'] = 'normal'
       btn['background']       = colors['normal']
       btn['activebackground'] = colors['hover']
+
+      if 'activeforeground' in colors:
+         btn['activeforeground']= colors['activeforeground']
+      if 'fg' in colors:
+         btn['fg'] = colors['fg']
+
+
    else:
       btn['state'] = 'disabled'
       btn['background'] = '#c0c0c0'
@@ -71,7 +87,7 @@ def refresh_the_bottom_buttons():
       set_button_enabled_state( lb['button'], lock_btn_state, lb['colors'] )
 
       for i in range( NUM_CMDS ):
-         ee =  all_rows[i]['entrywidget']
+         ee =  AllRows[i]['entrywidget']
          if presently_locked:
             ee['disabledbackground'] =  yellowish
             ee['disabledforeground'] =  black
@@ -84,7 +100,7 @@ def refresh_the_bottom_buttons():
 def refresh_button_for_row( ix ):
  if fully_installed:
    do_enabled=True;  up_enabled=True;  down_enabled=True
-   ri = all_rows[ix]
+   ri = AllRows[ix]
    e = ri['entrywidget']
    if len( e.get() ) <=0:
       do_enabled=False
@@ -131,7 +147,7 @@ def execute_do_async( sendcmd ):
    t.start()
 
 def blink_row( ix, highlight_color, nloops, secs ):  
-   ee = all_rows[ix]['entrywidget']
+   ee = AllRows[ix]['entrywidget']
    #time.sleep( 0.15)
    for i in range(nloops):
       ee['background'] = highlight_color
@@ -165,7 +181,7 @@ def button_cb( ix,name ):
       presently_locked=False
    elif name=='do':
       blink_row_async(ix, pink,2, 0.1)
-      sendcmd = all_rows[ix]['entrywidget'].get()
+      sendcmd = AllRows[ix]['entrywidget'].get()
       execute_do_async( sendcmd )
    elif name=='up':
       if ix==0:
@@ -178,7 +194,7 @@ def button_cb( ix,name ):
          return()
       swap_entry_contents( ix, ix+1)
    else:
-      exit_fail( "bad name: '%'%" % name )
+      print( "unhandled button: %s" % name )
    refresh_all_buttons()
 
 def entry_callback( stringvar, ix):
@@ -188,7 +204,7 @@ def entry_callback( stringvar, ix):
 def execute_undo():
    rval=[]
    for i in range(NUM_CMDS):
-      ri = all_rows[i]
+      ri = AllRows[i]
       e = ri['entrywidget']
       was_different = True if e.get()!=init_lines[i] else False
       rval.append(was_different)
@@ -201,7 +217,7 @@ def execute_save():
    saved_lines=[]
    f=open( fn_settings, 'w' )
    for i in range( NUM_CMDS ):
-      ri = all_rows[i]
+      ri = AllRows[i]
       e = ri['entrywidget']
       f.write(  e.get()+'\n' )
       saved_lines.append(  e.get() )
@@ -209,8 +225,8 @@ def execute_save():
    init_lines = saved_lines
 
 def swap_entry_contents( ix0, ix1 ):
-   e0 = all_rows[ix0]['entrywidget']
-   e1 = all_rows[ix1]['entrywidget']
+   e0 = AllRows[ix0]['entrywidget']
+   e1 = AllRows[ix1]['entrywidget']
    s0 = e0.get()
    s1 = e1.get()
    e1.delete( 0,END)
@@ -219,7 +235,8 @@ def swap_entry_contents( ix0, ix1 ):
    e0.insert( 0,s1 )
 
 def install_main_grid( master ):
-   global all_rows
+   global AllRows
+
    do_font=font.Font( size=6 )
    for r in range(NUM_CMDS):
       row_info={}
@@ -234,11 +251,19 @@ def install_main_grid( master ):
       sv = StringVar()
       sv.trace( 'w',  lambda name, index, mode, j=r, sv=sv: entry_callback(sv,j) )
       e= Entry( master, width=50, textvariable=sv   )
-      e.grid(row=r,column=c, padx=2)
+      e.grid(row=r,column=c, padx=0)
       if r<len(init_lines):
          e.insert( 0, init_lines[r])
       row_info['entrywidget']=e
       c+=1
+
+      '''
+      btn = Button( master, text='CR', padx=1, pady=1, font=do_font, command=lambda j=r: button_cb(j,'cr')  )
+      btn.grid(row=r,column=c, padx=0 )
+      set_button_enabled_state( btn, True, dark_blues )
+      row_info['cr']=btn
+      c+=1
+      '''
 
       btn = Button( master, text='▲', padx=2, pady=3, font=do_font, command=lambda j=r: button_cb(j,'up')  )
       btn.grid(row=r,column=c, padx=0 )
@@ -252,7 +277,7 @@ def install_main_grid( master ):
       row_info['downbtn']=btn
       c+=1
 
-      all_rows.append( row_info )
+      AllRows.append( row_info )
    return
 
 def install_bottom_buttons( frame ):
@@ -266,19 +291,30 @@ def install_bottom_buttons( frame ):
    spacer_columns = {
       'sp_left'   : 3,
       'sp_middle' : 4,
-      'sp_right'  : 5,
+      'sp_right'  : 4,
    }
-   columns = ( 'sp_left' ,'unlock', 'lock', 'sp_middle' , 'undo', 'save', 'sp_right' )
+   text_cols = {
+      'ver' : VER,
+   }
+   columns = ( 'sp_left' ,'unlock', 'lock', 'sp_middle' , 'undo', 'save', 'sp_right', 'ver' )
 
    for col,name in enumerate(columns):
       if name in button_text:
          btn = Button( frame, text=button_text[name], command=lambda j=0,nn=name: button_cb(j,nn) )
-         btn.grid(row=0,column=col, padx=3, pady=5)
+         btn.grid(row=0,column=col, padx=3, pady=2)
          info_per_button = { 'button' : btn,  'colors':  blues  }
          BottomButtons[name]=info_per_button
       elif name in spacer_columns:
          weight = spacer_columns[name]
          frame.grid_columnconfigure( col, weight=weight)
+      elif name in text_cols:
+         do_font=font.Font( size=6 )
+         txt = Text( frame, font=do_font,height=1, width=len( text_cols[name]) )
+         txt.insert(INSERT, text_cols[name])
+         txt.config(state=DISABLED)
+         txt['bg']       = '#d8d8d8'
+         txt['relief']   = FLAT
+         txt.grid(row=0,column=col, sticky=SE)
       else:
          exit_fail( "illegal column")
       col+=1

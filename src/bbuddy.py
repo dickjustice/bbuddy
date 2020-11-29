@@ -3,18 +3,18 @@
 
 import sys,os,subprocess,signal,json,threading,time
 
-
-from PyQt5 import QtCore, QtWidgets, QtGui
-
-from PyQt5.QtWidgets import (QWidget, QPushButton,
+try:
+   from PyQt5 import QtCore, QtWidgets, QtGui
+   from PyQt5.QtWidgets import (QWidget, QPushButton,
                              QHBoxLayout, QVBoxLayout, QApplication, 
                              QLineEdit, QMessageBox, QTreeWidget , QLabel)
 
-from PyQt5.QtCore import QTime, QTimer
-from PyQt5.QtGui import QFont
-
-QString=type("")
-
+   from PyQt5.QtCore import QTime, QTimer
+   from PyQt5.QtGui import QFont
+except:
+   print( "Problem loading PyQT5 module" )
+   print( "Try: pip3 install pyqt5" )
+ 
 
 VER='v0.0.02'
 
@@ -77,7 +77,6 @@ def run( cmd ):
    return( p.returncode,  p.stdout.decode( "utf-8" ),  p.stderr.decode( "utf-8" )  )
 
 
-
 def calc_ms_delay_per_key( sendcmd ):
    delay_ms = MS_PER_KEYSTROKE_MAX 
    if len(sendcmd)>0:
@@ -134,29 +133,6 @@ class BBuddyWidget(QWidget):
             if 'lock' not in self.AllBottomStuff:
                 return
 
-
-
-            '''
-            ub = self.AllBottomStuff[ 'unlock' ]
-            unlock_btn_state = True if self.presently_locked else False
-            self.set_button_enabled_state( ub['button'], unlock_btn_state,  ub['colors'] )
-            lb = self.AllBottomStuff[ 'lock' ]
-            lock_btn_state = True if (not self.presently_locked) and (not havechanged) else False
-            self.set_button_enabled_state( lb['button'], lock_btn_state, lb['colors'] )
-            '''
-
-            '''
-            for i in range( NUM_CMDS ):
-                ee =  self.AllRows[i]['entrywidget']
-                if self.presently_locked:
-                    ee['disabledbackground'] =  yellowish
-                    ee['disabledforeground'] =  black
-                    ee['state'] = 'disabled'
-                else:
-                    ee['background'] =  white
-                    ee['state'] = 'normal'
-            
-            '''
             ltext = 'LOCKED' if self.presently_locked else 'UNLOCKED'
             self.AllBottomStuff['lock_state_lbl'].setText( ltext )
 
@@ -184,21 +160,8 @@ class BBuddyWidget(QWidget):
             self.set_button_enabled_state( row['downbtn'], down_enabled )
             self.set_button_enabled_state( row['dobtn'],   do_enabled   )
 
-            '''
-            style = '.style_entry_locked' if self.presently_locked else  '.style_entry_unlocked'
-            e = row['entrywidget']
-            prop = e.property( 'class')
-            if ix==0:
-                    print( "existing prop:", prop)
-                    print( "new style:", style)        
-            e.setProperty("class", style );
-            '''
-            
-            #e.setProperty( "flashing", False )
-
             e.setReadOnly( self.presently_locked )
             e.setStyleSheet(self.GlobalStyleSheet)        
-
 
 
 

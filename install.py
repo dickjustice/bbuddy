@@ -105,19 +105,19 @@ def main( argv ):
    print( "installing to '%s/' ..." % dest_dir )
    dir_src = 'src'
    src_files = os.listdir( dir_src )
-   print( "files:", src_files )
+   #print( "files:", src_files )
 
 
    for fn_src in src_files:
-      fn_dest = fn_src[:-3] if fn_src.endswith( '.py' ) else fn_src
+      if os.path.isfile('%s/%s'%(dir_src,fn_src)):
 
-
-      cmd = "cp %s/%s %s/%s"  % (dir_src, fn_src, dest_dir, fn_dest)
-      rr,oo,ee = run( cmd )
-      print( "executing: '%s'" % cmd )
-      if rr!=0 or len(ee)>0:
-         print( "Failed msg:", ee )
-         print( "Install aborted.")
+         fn_dest = fn_src[:-3] if fn_src.endswith( '.py' ) else fn_src
+         cmd = "cp %s/%s %s/%s"  % (dir_src, fn_src, dest_dir, fn_dest)
+         rr,oo,ee = run( cmd )
+         print( "executing: '%s'" % cmd )
+         if rr!=0 or len(ee)>0:
+            print( "Failed msg:", ee )
+            print( "Install aborted.")
    print( "Install done.")       
 
 #---------

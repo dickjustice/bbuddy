@@ -14,7 +14,7 @@ try:
 except:
    print( "Problem loading PyQT5 module" )
    print( "Try: pip3 install pyqt5" )
- 
+   exit()
 
 VER='v0.0.02'
 

@@ -62,7 +62,7 @@ def main( argv ):
             ixx = ix0+i
             if ixx<nb_to_print:
                 bval = contents[ixx]
-                if bval >=0x20 and bval <= 0x7f:
+                if bval >=0x20 and bval <= 0x7e:
                     bvalbinstr = contents[ixx: ixx+1]
                     str = bvalbinstr.decode( 'utf-8')
                     print( str, end='')

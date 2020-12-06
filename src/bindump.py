@@ -14,36 +14,22 @@ def usage_bail():
     print( "  -a : dump entire file. Otherwise dumps first 256 bytes only" )
     exit()
 
-def main( argv ):
-    mode_all = False
-    fn = None
-
-    for arg in argv[1:]:
-        if arg=='-a':
-            mode_all = True
-        elif os.path.isfile( arg ):
-            fn = arg
-        else:
-            print( "'%s' is neither an option nor a filename" % arg )
-            usage_bail()
-
-    if fn is None:
-        print( "No file specified to dump" )
-        usage_bail()            
-
-    with open( fn, 'rb' ) as f:
-        contents = f.read()
+#  if nb<=0, it means to print all of it
+def dumpmem( contents, descr='data', nb=0 ):
+    mode_all= True if nb<=0 else False
 
     if mode_all:
-        print( "contents of entire file '%s':" % fn )
+        print( "all %s:" % descr )
         nb_to_print = len(contents)
     else:
-        if len(contents) <= 256:
-            print( "contents of entire file '%s':" % fn )
+        if len(contents) <= nb:
+            print( "all %s:" % descr )
+            #print( "contents of entire file '%s':" % fn )
             nb_to_print = len(contents)
         else:
-            print( "beginning of file '%s':" % fn )
-            nb_to_print = 256
+            print( "beginning of %s:" % descr )
+            #print( "beginning of file '%s':" % fn )
+            nb_to_print = nb
 
     ix0 = 0;
     done=False
@@ -74,6 +60,30 @@ def main( argv ):
         ix0+=16
         if ix0>= nb_to_print:
             done=True
+    return
+
+def main( argv ):
+    fn = None
+    nb = 256
+
+    for arg in argv[1:]:
+        if arg=='-a':
+            nb=0
+        elif os.path.isfile( arg ):
+            fn=arg
+        else:
+            print( "'%s' is neither an option nor a filename" % arg )
+            usage_bail()
+
+    if fn is None:
+        print( "No file specified to dump" )
+        usage_bail()            
+
+    with open( fn, 'rb' ) as f:
+        contents = f.read()
+
+    dumpmem( contents, descr="file '%s'"%fn, nb=nb )
+    return
 
 #---------
 if __name__ == "__main__":

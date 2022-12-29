@@ -21,14 +21,21 @@ MAGENTA="\033[1;35m"
 BOLD_YELLOW  = "\033[1;33m"
 BOLD_RED=  "\033[1;31m"
 
-#
-def colorize_it( file, what  ):
-    parts = file.split( what )
-    jval = BOLD_RED + what + RESET
-    rval = jval.join( parts )
-    return rval
 
-def does_it_match( file, what ):
+def problem(msg):
+    print(f"{YELLOW}###{RESET} {msg}")
+
+def colorize_it( name, what, pre=BOLD_RED, post=RESET  ) -> str:
+    '''
+    for all instantes of 'what' in 'name',
+    replace the 'what' with {pre}{what}{post} 
+    returns the new string
+    '''
+    parts = name.split( what )
+    jval = f"{pre}{what}{post}"
+    return jval.join( parts )
+
+def does_it_match( file, what ) -> bool:
     if what=='*':
         mval = ''
         matches = True
@@ -50,7 +57,7 @@ def does_it_match( file, what ):
     return matches
 
 
-def directory_is_excluded( root, d, exclude_dirs ):
+def directory_is_excluded( root, d, exclude_dirs ) -> bool:
     for exx in exclude_dirs:
         if '/' in exx:
             if os.path.abspath(root+'/'+d) == os.path.abspath(exx):
@@ -68,6 +75,7 @@ def usage_bail():
     print(  "   If 'fn_match' not spcified, searches all files (uses '*') ")
     print(  "If file '.exclude' is present at any level, it excludes its listed directories")
     sys.exit(1)
+
 
 def main( argv ):
     if len(argv)<2:
@@ -108,8 +116,15 @@ def main( argv ):
 
     for fn in searchfiles:
         if os.path.exists(fn):
-            with open(fn,'rb') as f:
-                contents = f.read()
+            try:
+                with open(fn,'rb') as f:
+                    contents = f.read()
+            except PermissionError as _:                    
+                problem( f"No Permission to read: {fn}")
+                continue
+            except Exception as e:
+                print( f"could not read {fn}: {str(e)}")
+                continue
             lines_bin = contents.splitlines()
             for ix,line_bin in enumerate( lines_bin ):
                 try:

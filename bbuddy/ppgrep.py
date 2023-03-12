@@ -28,7 +28,7 @@ def problem(msg):
 def colorize_it( name, what, pre=BOLD_RED, post=RESET  ) -> str:
     '''
     for all instantes of 'what' in 'name',
-    replace the 'what' with {pre}{what}{post} 
+    replace the 'what' with {pre}{what}{post}
     returns the new string
     '''
     parts = name.split( what )
@@ -73,11 +73,12 @@ def usage_bail():
     print(  "Usage: ppgrep <what> [fn_match] [fn_match_2] .." )
     print(  "   Recursively searches for string <what> in files under local dir" )
     print(  "   If 'fn_match' not spcified, searches all files (uses '*') ")
-    print(  "If file '.exclude' is present at any level, it excludes its listed directories")
+    print(  "If file '.exclude' is present at any level, it excludes its listed folders")
     sys.exit(1)
 
 
-def main( argv ):
+def main():
+    argv=sys.argv
     if len(argv)<2:
         usage_bail()
 
@@ -119,7 +120,7 @@ def main( argv ):
             try:
                 with open(fn,'rb') as f:
                     contents = f.read()
-            except PermissionError as _:                    
+            except PermissionError as _:
                 problem( f"No Permission to read: {fn}")
                 continue
             except Exception as e:
@@ -133,17 +134,14 @@ def main( argv ):
                         #print( "%s (%d): %s" % (fn, ix+1,   colorize_it(line,what)  ))
                         print( f"{fn} ({ix+1}): {colorize_it(line,what)}" )
                 except Exception as _:
-                    #most of the time, no desire to print here. zip, binaries, etc cause issues
+                    #most of the time, no desire to print here.
+                    #zip, binaries, etc cause issues
                     #print( "problem decoding in '%s'" % fn )
                     pass
     if len(exclude_dirs)>0:
         xdirs = [  Path(x).as_posix()+'/' for x in exclude_dirs ]
         print( "Note: These dirs excluded from search:",', '.join(xdirs) )
+
+
 if __name__ == '__main__':
-    main( sys.argv )
-
-
-
-
-
-
+    main()

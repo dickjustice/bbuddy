@@ -39,7 +39,8 @@ confidence=
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-#enable=
+enable=consider-using-f-string,
+
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this
@@ -71,7 +72,7 @@ disable=abstract-method,
         execfile-builtin,
         file-builtin,
         filter-builtin-not-iterating,
-        #fixme,                                # commented out, DJ
+        #fixme,                                 FSH
         getslice-method,
         global-statement,
         hex-method,
@@ -99,8 +100,8 @@ disable=abstract-method,
         no-else-raise,
         no-else-return,
         no-init,  # added
-        #no-member,            # FSH
-        #no-name-in-module,    # FSH
+        #no-member,            # DJ
+        #no-name-in-module,    # DJ
         no-self-use,
         nonzero-method,
         oct-method,
@@ -147,12 +148,13 @@ disable=abstract-method,
         xrange-builtin,
         zip-builtin-not-iterating,
 
-        #FOLLOWING added by DJ
         chained-comparison,
-        #simplifiable-if-expression,
-        #multiple-imports,
-        #consider-using-max-builtin,
-        #consider-using-min-builtin,
+        simplifiable-if-expression,
+        consider-using-max-builtin,
+        consider-using-min-builtin,
+        bad-whitespace,
+        bad-continuation,
+
 
 [REPORTS]
 
@@ -165,7 +167,7 @@ output-format=text
 # command line instead of printing them on stdout. Reports (if any) will be
 # written in a file name "pylint_global.[txt|html]". This option is deprecated
 # and it will be removed in Pylint 2.0.
-files-output=no
+#files-output=no
 
 # Tells whether to display a full report or only the messages
 reports=no
@@ -271,8 +273,8 @@ generated-members=
 [FORMAT]
 
 # Maximum number of characters on a single line.
-# DJ modified - changed it to 100 (from 80)
-max-line-length=100
+# DJ modified - changed it to 90 (from 80)
+max-line-length=90
 
 # TODO(https://github.com/PyCQA/pylint/issues/3352): Direct pylint to exempt
 # lines made too long by directives to pytype.
@@ -290,7 +292,7 @@ single-line-if-stmt=yes
 # separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
 # `trailing-comma` allows a space between comma and closing bracket: (a, ).
 # `empty-line` allows space-only lines.
-no-space-check=
+#no-space-check=
 
 # Maximum number of lines in a module
 max-module-lines=99999
@@ -319,7 +321,7 @@ notes=TODO,todo
 
 # This flag controls whether inconsistent-quotes generates a warning when the
 # character used as a quote delimiter is used inconsistently within a module.
-#DJ - changed from yes to no
+#FSH - changed from yes to no
 #check-quote-consistency=no
 
 
@@ -445,7 +447,7 @@ valid-metaclass-classmethod-first-arg=mcs
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "Exception"
-#DJ - changed to allow general Exception
+#FSH - changed to allow general Exception
 #overgeneral-exceptions=StandardError,
 #                       Exception,
 #                       BaseException

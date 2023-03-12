@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-#
-#   bindump.py
-#
-#  (c) 2020 Dick Justice
-#  Released under MIT license.
+"""
+bindump.py
+(c) 2020 Dick Justice
+Released under MIT license.
+"""
 
 import sys
 import os
 import struct
 
-RED="\033[1;31m"; YELLOW="\033[0;33m"; GREEN="\033[0;32m"; RESET="\033[0;0m"; BOLD="\033[;1m";BLUE="\033[1;34m";MAGENTA="\033[1;35m"
+
+#xxpylint: disable=C0209 (consider-using-f-string)
 
 def dump_line_of_ints( ix0,memm, formatt ):
     print( "%3x: " % ix0, end='' )
-    done=False
     for i in range(4):
         data=memm[4*i:4*i+4]
         if len(data)==4:
@@ -31,6 +31,32 @@ def le_32s( ix0, memm ):
 
 def be_32s( ix0, memm ):
     dump_line_of_ints( ix0, memm, '>I' )
+
+
+
+def dump_line_of_int_64s( ix0,memm, formatt ):
+    print( "%3x: " % ix0, end='' )
+    for i in range(2):
+        data=memm[8*i:8*i+8]
+        if len(data)==8:
+            v = struct.unpack( formatt, data )
+            print( '%016x ' % v, end='' )
+        elif len(data)>0:
+            ss = ('??'*len(data)).ljust(17)
+            print( ss,end='')
+        else:
+            print( ' '*17, end='' )
+    print( '' )
+
+
+
+def le_64s( ix0, memm ):
+    dump_line_of_int_64s( ix0, memm, '<Q' )
+
+def be_64s( ix0, memm ):
+    dump_line_of_int_64s( ix0, memm, '>Q' )
+
+
 
 #  dump up to 16 bytes of data as both hex and ascii
 def dump_ascii_line( ix0, memm ):
@@ -57,18 +83,21 @@ def dump_ascii_line( ix0, memm ):
     return()
 
 #  if nb<=0, it means to print all of it
-def dumpmem( contents, descr='data', nb=0, formatt=dump_ascii_line ):
+def dumpmem( contents, descr=None, nb=0, formatt=dump_ascii_line ):
     mode_all= True if nb<=0 else False
 
     if mode_all:
-        print( "All %s:" % descr )
+        if descr is not None:
+            print( "All %s:" % descr )
         nb_to_print = len(contents)
     else:
         if len(contents) <= nb:
-            print( "all %s:" % descr )
+            if descr is not None:
+                print( "all %s:" % descr )
             nb_to_print = len(contents)
         else:
-            print( "beginning of %s:" % descr )
+            if descr is not None:
+                print( "beginning of %s:" % descr )
             nb_to_print = nb
     print( "chars to print:", nb_to_print)
     data_to_print = contents[ :nb_to_print]
@@ -79,38 +108,39 @@ def dumpmem( contents, descr='data', nb=0, formatt=dump_ascii_line ):
         printline = data_to_print[:16]
         if len(printline)>0 :
             formatt( ix0,  printline )
-            #dump_ascii_line( ix0,  printline )
         else:
             done=True
         ix0+=16
-        data_to_print = data_to_print[16:] 
-
-    return
+        data_to_print = data_to_print[16:]
 
 
 def usage_bail():
     print( "usage: bindump [opts] fn [opts]")
     print( "Possible opts:" )
-    print( "  -a  : dump entire file. Otherwise dumps first 256 bytes only" )
-    print( "  -le : dump data as array of 32-bit LE ints" )
-    print( "  -be : dump data as array of 32-bit BE ints" )
-    exit()
+    print( "  -a    : dump entire file. Otherwise dumps first 256 bytes only" )
+    print( "  -le   : dump data as array of 32-bit LE ints" )
+    print( "  -be   : dump data as array of 32-bit BE ints" )
+    print( "  -le64 : dump data as array of 64-bit LE ints" )
+    print( "  -be64 : dump data as array of 64-bit BE ints" )
+    sys.exit(1)
 
 
-def main( argv ):
+def main():
     fn = None
     nb = 256
-    formatt=dump_ascii_line 
+    formatt=dump_ascii_line
 
-    for arg in argv[1:]:
+    for arg in sys.argv[1:]:
         if arg=='-a':
             nb=0
         elif arg=='-le':
             formatt=le_32s
-            pass
         elif arg=='-be':
             formatt=be_32s
-            pass
+        elif arg=='-le64':
+            formatt=le_64s
+        elif arg=='-be64':
+            formatt=be_64s
 
         elif os.path.isfile( arg ):
             fn=arg
@@ -120,15 +150,14 @@ def main( argv ):
 
     if fn is None:
         print( "No file specified to dump" )
-        usage_bail()            
+        usage_bail()
 
     with open( fn, 'rb' ) as f:
         bindata = f.read()
 
     dumpmem( bindata, descr="file '%s'"%fn, nb=nb, formatt=formatt )
-    return
 
 #---------
 if __name__ == "__main__":
-    main( sys.argv)
+    main()
 

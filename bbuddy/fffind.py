@@ -91,10 +91,11 @@ def usage_bail():
     print( "     -x dir : exclude this directory. may be used multpiple times")
     print( "              if dir contains '/', only the one instance is excluded" )
     print( "              otherwise, any dir with that name found is excluded" )
-    print( "If file '.exclude' is present at any level, it excludes its listed directories")
+    print( "If file '.exclude' is present at any level, it excludes its listed folders")
     sys.exit(1)
 
-def main( argv ):
+def main():
+    argv=sys.argv
     exclude_dirs = []
     report_files=True
     report_dirs= True
@@ -156,7 +157,8 @@ def main( argv ):
         xdirs = [  Path(x).as_posix()+'/' for x in exclude_dirs ]
         print( "Note: These dirs excluded from search:",', '.join(xdirs) )
 
-#---------
+
 if __name__ == "__main__":
-    main( sys.argv)
+    main()
+
 

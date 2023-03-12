@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-dbdummp.py
-(c) 2020-2022 Dick Justice
+dbdummp.py - code to dump an sqlite database file
+
+(c) 2022 Dick Justice
 Released under MIT license.
+
 """
 import os
 import sys
@@ -11,28 +13,18 @@ import textwrap
 
 DBDUMP_VER = '0.0.002'
 
-#pylint: disable=C0209  (consider-using-f-string)
+VERB_SILENT  = 0
+VERB_TERSE   = 1
+VERB_NORMAL  = 2
+VERB_VERBOSE = 3
+VERB_DEBUG   = 4
 
-VERB_SILENT=0
-VERB_TERSE=1
-VERB_NORMAL=2
-VERB_VERBOSE=3
-VERB_DEBUG=4
-
-#======================================================================
-# various ansi color codes
 RED     = "\033[1;31m"
-YELLOW  = "\033[0;33m"
+YELLOW  = "\033[0;31m"
 RESET   = "\033[0;0m"
 
-
-
 def err_msg( msg ):
-    print(f"{RED}ERR{RESET}: {msg}")
-
-def exit_fail(msg):
-    print(f"{RED}FAIL{RESET}: {msg}")
-    sys.exit(1)
+    print( RED+"Err"+RESET+": "+msg )
 
 def get_table_all_column_names(  curs, table_name ):
     cmd =  "select * from %s;" % table_name
@@ -57,12 +49,13 @@ def field_descr( colval, shorten_long_strings=False, width=80 ):
     elif tname == 'NoneType':
         descr = 'nonetype?'
     else:
-        exit_fail( f"unrecog type '{tname}'")
+        print( "unrecog type '%s'\n"%  tname )
+        sys.exit(1)
     return descr
 
 
-def dump_db_row( row, cnt, start='', printrownum=True, width=80, verb=VERB_NORMAL,
-            longlinehandle='wrap' ):
+def dump_db_row( row, cnt, start='', printrownum=True, width=80,
+        verb=VERB_NORMAL, longlinehandle='wrap' ):
     if verb>=VERB_DEBUG:
         print( "raw row:", row )
 
@@ -85,7 +78,7 @@ def dump_db_row( row, cnt, start='', printrownum=True, width=80, verb=VERB_NORMA
             print( start + ll )
     elif longlinehandle=='shorten':
         ll = textwrap.shorten(line, width=width, placeholder=" ...")
-        print( '  ' + start + ll )    #textwrap.shorten() removes spaces so we add them back
+        print( '  ' + start + ll )  #textwrap.shorten() removes spaces so we add them back
 
     elif longlinehandle=='clamp':
         if len( line ) > width:
@@ -123,12 +116,12 @@ def dump_db_table( c, table_name, start='', width=80, names_of_columns_to_get=No
     line += "Col names: %s. " % collist
 
     if max_lines_to_get==0:
-        cmd =  "select %s from %s;" % (collist,table_name)
+        cmd = "select %s from %s;" % (collist,table_name)
     else:
-        cmd =  "select %s from %s where ROWID<=%d;" % (collist,table_name, max_lines_to_get)
+        cmd = "select %s from %s where ROWID<=%d;"%(collist,table_name, max_lines_to_get)
 
     try:
-        _ = c.execute(cmd)
+        _ = c.execute( cmd)
         cc  = c.fetchall()
 
         line += "nrows: %d"% len(cc)
@@ -137,11 +130,13 @@ def dump_db_table( c, table_name, start='', width=80, names_of_columns_to_get=No
             #print( start + ll )
             print( ll )
 
-        for cnt,row in enumerate(cc):
-            dump_db_row( row, cnt, start=start, width=width, longlinehandle=longlinehandle )
+        cnt=0
+        for row in cc:
+            dump_db_row(row, cnt, start=start, width=width, longlinehandle=longlinehandle)
+            cnt+=1
     except Exception as e:
-        err_msg( f"Database error: {str(e)}")
-        # TODO: Handle this better perhaps
+        err_msg( f"A db access error occurred: {e}")
+        print( "TODO: figure out how to print real complaint")
 
     #print( "db table access done")
     return()
@@ -174,9 +169,10 @@ def db_fetch_all_table_names_using_fetchone( c, verb=VERB_NORMAL ):
                 print( row )
     return alltables
 
-
 def db_fetch_all_table_names( c, verb=VERB_NORMAL ):
     return db_fetch_all_table_names_using_fetchone(c,verb)
+
+
 
 
 # valid values for:
@@ -186,13 +182,14 @@ def db_fetch_all_table_names( c, verb=VERB_NORMAL ):
 #   '_table_with_num_ num' |  table specified by index number num
 #    other                 |  table specified by name
 
-def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_", verb=VERB_NORMAL,
-                specified_column_names=None, max_table_lines=0, longlinehandle='wrap', width=80 ):
+def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_",
+        verb=VERB_NORMAL, specified_column_names=None, max_table_lines=0,
+        longlinehandle='wrap', width=80 ):
+    print( "dump_db:" )
 
     if specified_column_names is None:
         specified_column_names=[]
 
-    print( "dump_db:" )
     conn = sqlite3.connect( fn_db )
     c = conn.cursor()
     report_all_tables = False
@@ -217,21 +214,26 @@ def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_", 
             print( "Table named '%s' not in database! " % id_table_name )
             bad_table=True
     if id_table_num >= len(alltables) :
-        err_msg( f"Table number ({id_table_num}) too big. must be less than {len(alltables) }!" )
+        print( RED+"Error"+RESET+": ", end='' )
+        print( "Table number (%d) too big. must be less than %d !" %
+            (id_table_num,len(alltables) ) )
 
     if verb>=VERB_NORMAL or bad_table:
+        ix=0
         ddd=[]
-        for ix, tblname in enumerate(alltables):
+        for tblname in alltables:
             descr = '%s(%d)' % (tblname, ix)
             ddd.append( descr)
+            ix+=1
 
         tablestring=  "Tables in db: " + ', '.join(ddd)
+        #longlinehandle='wrap'
         if longlinehandle=='full':
             print( tablestring )
         else:
             #width=60
             print( "-" * width )
-            wrappedlines = textwrap.wrap( tablestring, width=width, subsequent_indent='  ' )
+            wrappedlines = textwrap.wrap(tablestring, width=width, subsequent_indent='  ')
             for ll in wrappedlines:
                 print( start + ll )
 
@@ -259,19 +261,18 @@ def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_", 
     conn.close()
 
 def dump_db_incoming( receiver_name, receiver_color, from_text, fn_db ):
-    print( '⌐' + '-'*30)
-    print( '| ' + from_text + " --> " +receiver_color+ receiver_name + RESET +": ", end='')
+    print('⌐' + '-'*30)
+    print('| ' + from_text + " --> " +receiver_color+ receiver_name + RESET +": ", end='')
     db_dump( fn_db, start='| '  )
-    print( '⌙' + '-'*30)
-
+    print('⌙' + '-'*30)
 
 def dump_db_outgoing( sender_name, sender_color, to_text, fn_db ):
-    print( '⌐' + '-'*30)
-    print( '| ' + sender_color + sender_name +RESET+ " --> "+to_text +": ", end='')
+    print('⌐' + '-'*30)
+    print('| ' + sender_color + sender_name +RESET+ " --> "+to_text +": ", end='')
     db_dump( fn_db, start='| ' )
-    print( '⌙' + '-'*30)
+    print('⌙' + '-'*30)
 
-
+#pylint: disable=C0301 #(line-too-long)
 def usage_bail():
     cmd = sys.argv[0]
     print( "%s v %s - tool to dump an sqlite database" % (cmd,DBDUMP_VER) )
@@ -281,14 +282,13 @@ def usage_bail():
     print( "    -table TBL     : table index number or its name"    )
     print( "    -col FIELDNAME : table column name to get. May be multiple of these"    )
     print( "    -mtl num       : specify maximum entries per table to display")
-    print( "    -wrap*, -full, -shorten, -clamp:  for each row in a database, handle long lines"  )
+    print( "    -wrap*, -full, -shorten, -clamp:  for each row in a database, how to handle long lines"  )
     print( "         -wrap is default, showing all data with human readable presentation"  )
     print( "         -full shows all data using long lines per table line"  )
     print( "         -shorten and -clamp reduce the data shown"  )
     print( "    -width num     : width of display in characters.  Overrides window width.")
     sys.exit(1)
-
-
+#pylint: enable=C0301 #(line-too-long)
 #=======================================
 
 # valid values for:
@@ -298,10 +298,8 @@ def usage_bail():
 #   '_table_with_num_ num' |  table specified by index number num
 #    other                 |  table specified by name
 
-def main(argv):
-
-    verb = VERB_NORMAL
-
+def main():
+    argv=sys.argv
     top_lev_only=False
     if len(argv)<2:
         usage_bail()
@@ -321,12 +319,7 @@ def main(argv):
 
     # if we can read the console's width, subtract 5 and use that
     # pad it a little bit because of special characters
-    rows, columns = os.popen('stty size', 'r').read().split()
-
-    if verb>=VERB_DEBUG:
-        print( f"console size: {rows} rows x {columns} columns")
-
-
+    _, columns = os.popen('stty size', 'r').read().split()
     ccc = int(columns)
     if ccc>10 and ccc<1000:
         width=ccc-5
@@ -382,10 +375,8 @@ def main(argv):
         sys.exit(1)
 
     db_dump( fn_db, top_lev_only=top_lev_only, id_table_name=id_table_name,
-             specified_column_names=specified_column_names,
-             max_table_lines=max_table_lines,
-            longlinehandle=longlinehandle, width=width
-             )
+        specified_column_names=specified_column_names,
+        max_table_lines=max_table_lines, longlinehandle=longlinehandle, width=width)
 
 if __name__ == "__main__":
-    main( sys.argv)
+    main()

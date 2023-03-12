@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bbuddy"
+version = "0.0.1rc1"
+authors = [
+  { name="Dick Justice", email="dickjustice@x2400.com" },
+]
+packages = [
+  { include="bbuddy"}
+]
+description = "collection of helpful bash tools"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[tool.hatch.build]
+include = [
+  "bbuddy/*.py",
+]
+exclude = [
+  ".gitignore",
+  "bbuddy/.gitignore",  
+]
+
+[project.scripts]
+bindump   = "bbuddy.bindump:main"
+fffind    = "bbuddy.fffind:main"
+ppgrep    = "bbuddy.ppgrep:main"
+dbdump    = "bbuddy.dbdump:main"

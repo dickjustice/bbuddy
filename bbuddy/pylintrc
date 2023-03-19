@@ -452,6 +452,6 @@ valid-metaclass-classmethod-first-arg=mcs
 #                       Exception,
 #                       BaseException
 
-overgeneral-exceptions=StandardError,
-                       BaseException
+overgeneral-exceptions=builtins.StandardError,
+                       builtins.sBaseException
 

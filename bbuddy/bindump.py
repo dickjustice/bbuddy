@@ -10,7 +10,7 @@ import os
 import struct
 
 
-#xxpylint: disable=C0209 (consider-using-f-string)
+#pylint: disable=C0209 #(consider-using-f-string)
 
 def dump_line_of_ints( ix0,memm, formatt ):
     print( "%3x: " % ix0, end='' )

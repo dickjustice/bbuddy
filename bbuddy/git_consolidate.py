@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
-#
+"""
 #  git_consolidate.py
 #
 #  This will:
 #       - tag where we are as something like 'autotag_001'
 #       - consolidate the difference from the source point to here'
 #            and check in with passed message + extra info lines later
-#
+"""
 
-import sys,os,subprocess
+import sys
+import os
+import subprocess
 
-def exit_fail( msg ):
-    print( "FAIL: %s" % msg )
-    exit()
+#pylint: disable=C0209
+#pylint: disable=C0301
 
-def run( cmd ):
-   p  = subprocess.run(  cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE ) 
-   return( p.returncode,  p.stdout.decode( "utf-8" ),  p.stderr.decode( "utf-8" )  )
+def exit_fail(msg):
+    print( f"FAIL: {msg}" )
+    sys.exit(1)
 
-# run a command like normal, but abort if the return value indicates an error
+def run(cmd):
+    p = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    return p.returncode,  p.stdout.decode("utf-8"),  p.stderr.decode("utf-8")
+
+#s run a command like normal, but abort if the return value indicates an error
 # we don't worry about stderr because that is used in normal git operations that succeed
 def run_git_cmd( cmd ):
     print( "| "+cmd )
@@ -40,39 +45,39 @@ def run_git_cmd( cmd ):
 #  returnval will be like: 'autotag_001'
 
 def get_next_autotag_name( formatter, swith ):
-    rr,oo,ee = run_git_cmd( 'git tag' )
+    _,oo,_ = run_git_cmd( 'git tag' )
     tags = oo.split()
-    maxx=0;
+    maxx=0
     for tag in tags:
         if tag.startswith( swith ):
             try:
                 val = int(  tag[ len(swith):  ] )
-            except:
+            except Exception as _:
                 val = 0
             if val>maxx:
                 maxx=val
 
     rval= formatter%(maxx+1)
-    return( rval )
+    return rval
 
 # executes 'git branch' and parses to get curent branch
 def get_present_branch():
-    rr,oo,ee = run_git_cmd( 'git branch' )
+    _, oo, _ = run_git_cmd( 'git branch' )
     lines=oo.splitlines()
     for line in lines:
         if line.startswith('*'):
-            return(  line.split()[-1]  )
-    return( None )
+            return line.split()[-1]
+    return None
 
 def get_head_hash():
-    rr,oo,ee = run_git_cmd( 'git rev-parse HEAD' )
+    _,oo, _ = run_git_cmd( 'git rev-parse HEAD' )
     thehash = oo.split()[0]
-    return( thehash )
+    return thehash
 
 def usage_bail():
-    print('usage:')
-    print("  git_consolidate source_point -m 'commit message'")  
-    exit()
+    print(  'Usage:')
+    print( f"  {sys.argv[0]} source_point -m 'commit message'")
+    sys.exit()
 
 def main():
     argv=sys.argv
@@ -86,18 +91,17 @@ def main():
 
     autotag_name = get_next_autotag_name(  'autotag_%03d', 'autotag_' )
     present_branch = get_present_branch()
-    head_hash = get_head_hash();
+    head_hash = get_head_hash()
 
     fn_commit = '/tmp/commit_msg.txt'
-    fd = open(fn_commit,'w')
-    fd.write( commit_message+'\n\n')
-    fd.write( 'Consolidated branch %s at terminus %s\n'%(present_branch,autotag_name)  )
-    fd.write( '   with hash: %s\n'%head_hash)
-    fd.close()
+    with open(fn_commit, 'w', encoding='utf-8') as fd:
+        fd.write( commit_message+'\n\n')
+        fd.write( 'Consolidated branch %s at terminus %s\n'%(present_branch,autotag_name)  )
+        fd.write( '   with hash: %s\n'%head_hash)
 
-    run_git_cmd( 'git tag %s'          % autotag_name );
-    run_git_cmd( 'git reset --soft %s' % source_point    );
-    run_git_cmd( 'git commit -F %s'    % fn_commit  );
+    run_git_cmd( 'git tag %s'          % autotag_name )
+    run_git_cmd( 'git reset --soft %s' % source_point    )
+    run_git_cmd( 'git commit -F %s'    % fn_commit  )
 
     os.remove( fn_commit )
     print( "done!" )

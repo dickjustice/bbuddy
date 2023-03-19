@@ -11,6 +11,9 @@ import sys
 import sqlite3
 import textwrap
 
+#pylint: disable=C0209 #(consider-using-f-string)
+
+
 DBDUMP_VER = '0.0.002'
 
 VERB_SILENT  = 0

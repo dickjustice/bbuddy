@@ -145,17 +145,17 @@ def main():
                 matches, fn_czd = does_it_match_and_please_colorize(
                                     file, root, what, colorize=colorize )
                 if matches:
-                    print( fn_czd )
+                    print( fn_czd, flush=True )
         if report_dirs:
             for dirr in dirs:
                 matches, dir_czd = does_it_match_and_please_colorize(
                                     dirr, root, what, colorize=colorize )
                 if matches:
-                    print( dir_czd + '/' )
+                    print( dir_czd + '/', flush=True )
 
     if len(exclude_dirs)>0:
         xdirs = [  Path(x).as_posix()+'/' for x in exclude_dirs ]
-        print( "Note: These dirs excluded from search:",', '.join(xdirs) )
+        print( "Note: These dirs excluded from search:",', '.join(xdirs), flush=True )
 
 
 if __name__ == "__main__":

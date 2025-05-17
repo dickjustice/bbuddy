@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bbuddy"
-version = "0.0.1"
+version = "0.0.2rc1"
 authors = [
   { name="Dick Justice", email="dickjustice@x2400.com" },
 ]
@@ -38,3 +38,4 @@ fffind    = "bbuddy.fffind:main"
 ppgrep    = "bbuddy.ppgrep:main"
 dbdump    = "bbuddy.dbdump:main"
 git_consolidate  = "bbuddy.git_consolidate:main"
+bbuddy   = "bbuddy.bbuddy:main"

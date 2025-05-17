@@ -442,7 +442,7 @@ def main():
     rr,oo,ee=run('%s getactivewindow' % XDOTOOL )
     if len(ee)>0:
         print( "problem running xdotool" )
-        print( "stderr:", ee )
+        print( "stderr:", ee.strip() )
         print( "try: sudo apt install xdotool" )
         exit()
 

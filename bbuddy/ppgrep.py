@@ -23,7 +23,7 @@ BOLD_RED=  "\033[1;31m"
 
 
 def problem(msg):
-    print(f"{YELLOW}###{RESET} {msg}")
+    print(f"{YELLOW}###{RESET} {msg}", flush=True)
 
 def colorize_it( name, what, pre=BOLD_RED, post=RESET  ) -> str:
     '''
@@ -124,7 +124,7 @@ def main():
                 problem( f"No Permission to read: {fn}")
                 continue
             except Exception as e:
-                print( f"could not read {fn}: {str(e)}")
+                print( f"could not read {fn}: {str(e)}", flush=True)
                 continue
             lines_bin = contents.splitlines()
             for ix,line_bin in enumerate( lines_bin ):
@@ -132,7 +132,7 @@ def main():
                     line = line_bin.decode( 'utf-8')
                     if what in line:
                         #print( "%s (%d): %s" % (fn, ix+1,   colorize_it(line,what)  ))
-                        print( f"{fn} ({ix+1}): {colorize_it(line,what)}" )
+                        print( f"{fn} ({ix+1}): {colorize_it(line,what)}", flush=True )
                 except Exception as _:
                     #most of the time, no desire to print here.
                     #zip, binaries, etc cause issues
@@ -140,7 +140,7 @@ def main():
                     pass
     if len(exclude_dirs)>0:
         xdirs = [  Path(x).as_posix()+'/' for x in exclude_dirs ]
-        print( "Note: These dirs excluded from search:",', '.join(xdirs) )
+        print( "Note: These dirs excluded from search:",', '.join(xdirs), flush=True )
 
 
 if __name__ == '__main__':

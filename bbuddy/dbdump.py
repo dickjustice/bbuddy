@@ -11,8 +11,7 @@ import sys
 import sqlite3
 import textwrap
 
-#pylint: disable=C0209 #(consider-using-f-string)
-
+#xxpylint: disable=C0209 #(consider-using-f-string)
 
 DBDUMP_VER = '0.0.002'
 
@@ -27,10 +26,10 @@ YELLOW  = "\033[0;31m"
 RESET   = "\033[0;0m"
 
 def err_msg( msg ):
-    print( RED+"Err"+RESET+": "+msg )
+    print( f"{RED}Err{RESET}: {msg}", flush=True )
 
 def get_table_all_column_names(  curs, table_name ):
-    cmd =  "select * from %s;" % table_name
+    cmd =  f"select * from {table_name};"
     cursor = curs.execute( cmd )
     names = list( map( lambda x: x[0], cursor.description ))
     return names
@@ -40,19 +39,19 @@ def field_descr( colval, shorten_long_strings=False, width=80 ):
     tname = type(colval).__name__
     if tname == 'str':
         if shorten_long_strings:
-            descr = "'%s'" %  textwrap.shorten(colval, width=width)
+            descr = f"'{textwrap.shorten(colval, width=width)}'"
         else:
-            descr = "'%s'" % colval
+            descr = f"'{colval}'"
     elif tname == 'int':
-        descr = "%d" % colval
+        descr = f"{int(colval)}"
     elif tname == 'float':
-        descr = "%f" % colval
+        descr = f"{float(colval)}"
     elif tname == 'bytes':
-        descr = "%d bytes" % len(colval)
+        descr = f"{len(colval)} bytes"
     elif tname == 'NoneType':
         descr = 'nonetype?'
     else:
-        print( "unrecog type '%s'\n"%  tname )
+        print( f"unrecog type '{tname}'\n", flush=True  )
         sys.exit(1)
     return descr
 
@@ -60,12 +59,11 @@ def field_descr( colval, shorten_long_strings=False, width=80 ):
 def dump_db_row( row, cnt, start='', printrownum=True, width=80,
         verb=VERB_NORMAL, longlinehandle='wrap' ):
     if verb>=VERB_DEBUG:
-        print( "raw row:", row )
+        print( f"raw row: {str(row)}",  flush=True  )
 
     linestart = '  '
     if printrownum:
-        linestart += 'Row %d: ' % (cnt)
-        #linestart += '%sRow %d%s: ' % (BOLD,cnt,RESET)
+        linestart += f'Row {cnt}: '
     ix=0
 
     vals =[]
@@ -78,23 +76,22 @@ def dump_db_row( row, cnt, start='', printrownum=True, width=80,
     if longlinehandle=='wrap':
         wrappedlines = textwrap.wrap( line, width=width, subsequent_indent='    ' )
         for ll in wrappedlines:
-            print( start + ll )
+            print( start + ll,  flush=True )
     elif longlinehandle=='shorten':
         ll = textwrap.shorten(line, width=width, placeholder=" ...")
-        print( '  ' + start + ll )  #textwrap.shorten() removes spaces so we add them back
+        print( '  ' + start + ll, flush=True )
 
     elif longlinehandle=='clamp':
         if len( line ) > width:
             line = line[0:width-4] + ' ...'
-        print( start + line )
+        print( start + line, flush=True )
 
     else:
-        print( line )
+        print( line, flush=True )
 
 def dump_db_table( c, table_name, start='', width=80, names_of_columns_to_get=None,
          max_lines_to_get=0, longlinehandle='wrap' ):
-    #line = "Table '%s': " % (BOLD+table_name+RESET)
-    line = "Table '%s': " % (table_name)
+    line = f"Table '{table_name}': "
 
     if names_of_columns_to_get is None:
         names_of_columns_to_get=[]
@@ -104,9 +101,6 @@ def dump_db_table( c, table_name, start='', width=80, names_of_columns_to_get=No
     else:
         colnames = get_table_all_column_names(  c, table_name )
 
-    #print( "colnames:", colnames)
-
-    #colnames = ('user_id','user_name')
     fetch_rowid=False
     if table_name.startswith('msgs'):
         fetch_rowid=True
@@ -116,22 +110,22 @@ def dump_db_table( c, table_name, start='', width=80, names_of_columns_to_get=No
         colnames.append( 'ROWID')
     collist = ', '.join(colnames)
 
-    line += "Col names: %s. " % collist
+    line += f"Col names: {collist}. "
 
     if max_lines_to_get==0:
-        cmd = "select %s from %s;" % (collist,table_name)
+        cmd = f"select {collist} from {table_name};"
     else:
-        cmd = "select %s from %s where ROWID<=%d;"%(collist,table_name, max_lines_to_get)
+        cmd = F"select {collist} from {table_name} where ROWID<={max_lines_to_get};"
 
     try:
         _ = c.execute( cmd)
         cc  = c.fetchall()
 
-        line += "nrows: %d"% len(cc)
+        line += f"nrows: {len(cc)}"
         wrappedlines = textwrap.wrap( line, width=width, subsequent_indent='    ' )
         for ll in wrappedlines:
             #print( start + ll )
-            print( ll )
+            print( ll, flush=True )
 
         cnt=0
         for row in cc:
@@ -153,7 +147,7 @@ def db_fetch_all_table_names_fetchall( c, verb=VERB_NORMAL ):
         tname = row[0]
         alltables.append( tname )
         if verb >= VERB_DEBUG:
-            print( row )
+            print( row, flush=True )
     return alltables
 
 #  same as other one, but using fetchone()
@@ -169,7 +163,7 @@ def db_fetch_all_table_names_using_fetchone( c, verb=VERB_NORMAL ):
             tname = row[0]
             alltables.append( tname )
             if verb >= VERB_DEBUG:
-                print( row )
+                print( row, flush=True )
     return alltables
 
 def db_fetch_all_table_names( c, verb=VERB_NORMAL ):
@@ -188,7 +182,7 @@ def db_fetch_all_table_names( c, verb=VERB_NORMAL ):
 def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_",
         verb=VERB_NORMAL, specified_column_names=None, max_table_lines=0,
         longlinehandle='wrap', width=80 ):
-    print( "dump_db:" )
+    print( "dump_db:", flush=True )
 
     if specified_column_names is None:
         specified_column_names=[]
@@ -213,32 +207,29 @@ def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_",
             if id_table_name == alltables[ix]:
                 id_table_num = ix
         if id_table_num <0:
-            print( RED+"Error"+RESET+": ", end='' )
-            print( "Table named '%s' not in database! " % id_table_name )
+            err_msg( f"Table named '{id_table_name}' not in database! ")
             bad_table=True
     if id_table_num >= len(alltables) :
-        print( RED+"Error"+RESET+": ", end='' )
-        print( "Table number (%d) too big. must be less than %d !" %
-            (id_table_num,len(alltables) ) )
+        err_msg( f"Table number ({id_table_num}) too big. must be less than {len(alltables)} !" )  #pylint: disable=C0301 (line-too-long)
 
     if verb>=VERB_NORMAL or bad_table:
         ix=0
         ddd=[]
         for tblname in alltables:
-            descr = '%s(%d)' % (tblname, ix)
+            descr = f'{tblname}({ix})'
             ddd.append( descr)
             ix+=1
 
         tablestring=  "Tables in db: " + ', '.join(ddd)
         #longlinehandle='wrap'
         if longlinehandle=='full':
-            print( tablestring )
+            print( tablestring, flush=True )
         else:
             #width=60
-            print( "-" * width )
+            print( "-" * width, flush=True )
             wrappedlines = textwrap.wrap(tablestring, width=width, subsequent_indent='  ')
             for ll in wrappedlines:
-                print( start + ll )
+                print( start + ll, flush=True )
 
     if bad_table:
         return
@@ -250,16 +241,15 @@ def db_dump( fn_db, start='', top_lev_only=False, id_table_name="_all_tables_",
         table_name = alltables[i]
         if report_all_tables or (i==id_table_num):
 
-            #print( "- "* int(width/2))
-            ttt = YELLOW + "Table %d"%i + RESET
-            print( "== %s : '%s'" % (ttt,table_name))
+            ttt = f"{YELLOW}Table {i}{RESET}"
+            print( f"== {ttt} : '{table_name}'", flush=True )
             dump_db_table( c, table_name, start=start,
                 names_of_columns_to_get  = specified_column_names,
                 max_lines_to_get=max_table_lines,
                 longlinehandle=longlinehandle,
                 width=width
                 )
-            print( "== Table %d END ==" % i)
+            print( f"== Table {i} END ==", flush=True )
 
     conn.close()
 
@@ -267,19 +257,19 @@ def dump_db_incoming( receiver_name, receiver_color, from_text, fn_db ):
     print('⌐' + '-'*30)
     print('| ' + from_text + " --> " +receiver_color+ receiver_name + RESET +": ", end='')
     db_dump( fn_db, start='| '  )
-    print('⌙' + '-'*30)
+    print('⌙' + '-'*30, flush=True)
 
 def dump_db_outgoing( sender_name, sender_color, to_text, fn_db ):
     print('⌐' + '-'*30)
     print('| ' + sender_color + sender_name +RESET+ " --> "+to_text +": ", end='')
     db_dump( fn_db, start='| ' )
-    print('⌙' + '-'*30)
+    print('⌙' + '-'*30, flush=True)
 
 #pylint: disable=C0301 #(line-too-long)
 def usage_bail():
     cmd = sys.argv[0]
-    print( "%s v %s - tool to dump an sqlite database" % (cmd,DBDUMP_VER) )
-    print( "usage: %s fn [more]" % cmd )
+    print(f"{cmd} v {DBDUMP_VER} - tool to dump an sqlite database" )
+    print(f"usage: {cmd} fn [more]"  )
     print( "  extra options:")
     print( "    -top           : show top level only"    )
     print( "    -table TBL     : table index number or its name"    )
@@ -332,7 +322,7 @@ def main():
         if working_on_table:
             try:
                 xxx=int(arg)
-                id_table_name= '_table_with_num_ %d' % xxx
+                id_table_name= f'_table_with_num_ {xxx}'
             except Exception as _:
                 id_table_name=arg
             working_on_table=False
@@ -374,7 +364,7 @@ def main():
         usage_bail()
 
     if not os.path.exists( fn_db ):
-        print( "file '%s' does not exist" % fn_db )
+        print( f"file '{fn_db}' does not exist"  )
         sys.exit(1)
 
     db_dump( fn_db, top_lev_only=top_lev_only, id_table_name=id_table_name,

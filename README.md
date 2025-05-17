@@ -8,3 +8,5 @@ Special thanks to [xdotool](https://www.semicomplete.com/projects/xdotool/), whi
 xdotool is available on github [here](https://github.com/jordansissel/xdotool).
 
 Also included in this distribution are the command line tools 'fffind', 'ppgrep', 'dbdump'.
+
+Install with: ```pip install bbuddy```
